@@ -1,0 +1,82 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <link rel="stylesheet" href="./CSS/style.css">
+    <script defer src="./JS/main.js"></script>
+
+    <title>Ansiedark Joyas</title>
+</head>
+
+
+<body>
+    <header class="encabezado">
+        <h1>Ansiedark Joyas</h1>
+        <p>Encontrá o creá tu plan de suscripción.</p>
+    </header>
+
+    <section 
+        id="aviso-promocional" 
+        class="aviso-promocional" 
+        aria-live="polite"
+    ></section>
+
+    <main class="contenedor">
+        <section class="panel">
+            <h2>Crear un nuevo plan</h2>
+
+            <form id="formulario-plan">
+                <div class="campo">
+                    <label for="nombre-plan">Nombre</label>
+                    <input type="text" id="nombre-plan" placeholder="Ej: Plan Bronce">
+                </div>
+
+                <div class="campo">
+                    <label for="precio-plan">Precio mensual</label>
+                    <input type="number" id="precio-plan" min="1" placeholder="Ej: 900">
+                </div>
+
+                <div class="campo">
+                    <label for="cantidad-joyas">Cantidad de joyas</label>
+                    <input type="number" id="cantidad-joyas" min="1" placeholder="Ej: 2">
+                </div>
+
+                <div class="campo">
+                    <label for="descripcion-plan">Descripción</label>
+                    <input type="text" id="descripcion-plan" placeholder="Descripción del plan">
+                </div>
+
+                <button type="button" id="boton-agregar">Agregar plan</button>
+            </form>
+
+            <p id="mensaje" class="mensaje" aria-live="polite"></p>
+        </section>
+
+        <section class="panel">
+            <div class="cabecera-listado">
+                <div>
+                    <h2>Planes disponibles</h2>
+                    <p>Compará las opciones de Ansiedark.</p>
+                </div>
+
+                <div class="campo campo-busqueda">
+                    <label for="buscador">Buscar un plan</label>
+                    <input type="text" id="buscador" placeholder="Escribí un nombre">
+                </div>
+            </div>
+            
+            <button type="button" id="boton-vaciar">
+                 Vaciar planes
+            </button>
+
+            <div id="contenedor-planes" class="grilla-planes"></div>
+        </section>
+    </main>
+
+    <footer>
+        <p>Ansiedark — Suscripciones de joyería</p>
+    </footer>
+</body>
+</html>
