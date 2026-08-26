@@ -1,0 +1,23 @@
+[
+    {
+        "id": 1,
+        "nombre": "Plan Oro",
+        "precio": 1500,
+        "cantidadJoyas": 3,
+        "descripcion": "Selección premium"
+    },
+    {
+        "id": 2,
+        "nombre": "Plan Plata",
+        "precio": 1200,
+        "cantidadJoyas": 2,
+        "descripcion": "Joyas clásicas y versátiles"
+    },
+    {
+        "id": 3,
+        "nombre": "Plan Acero Quirúrgico",
+        "precio": 700,
+        "cantidadJoyas": 2,
+        "descripcion": "Joyas resistentes para uso diario"
+    }
+]

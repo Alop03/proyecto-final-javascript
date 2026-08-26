@@ -221,3 +221,11 @@ footer {
     opacity: 1;
     transform: translateY(0);
 }
+
+.estado-carga {
+    min-height: 24px;
+    margin-bottom: 18px;
+    color: #6f1d46;
+    font-weight: bold;
+    text-align: center;
+}

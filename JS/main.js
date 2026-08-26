@@ -1,39 +1,9 @@
-// Pre-entrega 9: Asincronismo y manejo de errores
+// Pre-entrega 10: APIs, peticiones y librerías
 
-const CLAVE_STORAGE = "planesAnsiedark"
+const CLAVE_STORAGE = "planesAnsiedarkAPI"
 
-const planesIniciales = [
-    {
-        id: 1,
-        nombre: "Plan Oro",
-        precio: 1500,
-        cantidadJoyas: 3,
-        descripcion: "Selección premium"
-    },
-    {
-        id: 2,
-        nombre: "Plan Plata",
-        precio: 1200,
-        cantidadJoyas: 2,
-        descripcion: "Joyas clásicas y versátiles"
-    },
-    {
-        id: 3,
-        nombre: "Plan Acero Quirúrgico",
-        precio: 700,
-        cantidadJoyas: 2,
-        descripcion: "Joyas resistentes para uso diario"
-    }
-]
-
-function cargarPlanes() {
-    const datosGuardados = localStorage.getItem(CLAVE_STORAGE)
-    const planesGuardados = JSON.parse(datosGuardados ?? "null")
-
-    return planesGuardados ?? [...planesIniciales]
-}
-
-let planes = cargarPlanes()
+let planes = []
+let terminoBusqueda = ""
 
 const contenedorPlanes = document.querySelector("#contenedor-planes")
 const formularioPlan = document.querySelector("#formulario-plan")
@@ -45,9 +15,64 @@ const botonAgregar = document.querySelector("#boton-agregar")
 const botonVaciar = document.querySelector("#boton-vaciar")
 const buscador = document.querySelector("#buscador")
 const mensaje = document.querySelector("#mensaje")
+const estadoCarga = document.querySelector("#estado-carga")
 const avisoPromocional = document.querySelector("#aviso-promocional")
 
-let terminoBusqueda = ""
+function notificar(texto, tipo) {
+    const color = tipo === "error" ? "#b42318" : "#237a3b"
+
+    Toastify({
+        text: texto,
+        duration: 3000,
+        close: true,
+        gravity: "top",
+        position: "right",
+        stopOnFocus: true,
+        style: {
+            background: color
+        }
+    }).showToast()
+}
+
+function obtenerPlanesGuardados() {
+    const datosGuardados = localStorage.getItem(CLAVE_STORAGE)
+
+    return JSON.parse(datosGuardados ?? "null")
+}
+
+async function cargarPlanes() {
+    estadoCarga.textContent = "Cargando planes disponibles..."
+
+    try {
+        const respuesta = await fetch("./DATA/planes.json")
+
+        if (!respuesta.ok) {
+            throw new Error("No se pudo obtener el archivo de planes")
+        }
+
+        const planesRecibidos = await respuesta.json()
+        const planesGuardados = obtenerPlanesGuardados()
+
+        planes = planesGuardados ?? planesRecibidos
+
+        sincronizarDatos()
+
+        notificar(
+            "Planes cargados correctamente.",
+            "exito"
+        )
+    } catch (error) {
+        planes = obtenerPlanesGuardados() ?? []
+        actualizarVista()
+
+        notificar(
+            "No pudimos cargar los planes. Intentá nuevamente.",
+            "error"
+        )
+    } finally {
+        estadoCarga.textContent = ""
+    }
+}
 
 function sincronizarDatos() {
     let guardadoCorrecto = false
@@ -57,9 +82,9 @@ function sincronizarDatos() {
         localStorage.setItem(CLAVE_STORAGE, planesConvertidos)
         guardadoCorrecto = true
     } catch (error) {
-        mostrarMensaje(
-            "No pudimos guardar los cambios. Intentá nuevamente.",
-            "mensaje-error"
+        notificar(
+            "No pudimos guardar los cambios.",
+            "error"
         )
     } finally {
         actualizarVista()
@@ -96,9 +121,11 @@ function renderizarPlanes(listaPlanes) {
         contenedorPlanes.innerHTML += `
             <article class="tarjeta-plan">
                 <h3>${nombre}</h3>
+
                 <p class="precio">
                     $${precio.toLocaleString("es-UY")} por mes
                 </p>
+
                 <p>${textoJoyas}</p>
                 <p class="descripcion">${descripcion}</p>
 
@@ -122,7 +149,7 @@ function mostrarBeneficioPromocional() {
     setTimeout(() => {
         avisoPromocional.innerHTML = `
             <strong>Beneficio especial:</strong>
-            obtené un 10% de descuento en el primer mes de tu suscripción.
+            obtené un 10% de descuento en el primer mes.
         `
 
         avisoPromocional.classList.add(
@@ -135,7 +162,9 @@ function obtenerPlanesFiltrados() {
     return terminoBusqueda === ""
         ? planes
         : planes.filter(plan => {
-            return plan.nombre.toLowerCase().includes(terminoBusqueda)
+            return plan.nombre
+                .toLowerCase()
+                .includes(terminoBusqueda)
         })
 }
 
@@ -165,6 +194,12 @@ function agregarPlan() {
             "Completá todos los campos con datos válidos.",
             "mensaje-error"
         )
+
+        notificar(
+            "Revisá los datos ingresados.",
+            "error"
+        )
+
         return
     }
 
@@ -180,6 +215,7 @@ function agregarPlan() {
     }
 
     planes.push(nuevoPlan)
+
     const guardadoCorrecto = sincronizarDatos()
 
     buscador.value = ""
@@ -188,19 +224,26 @@ function agregarPlan() {
     limpiarFormulario()
     actualizarVista()
 
-    const textoMensaje = guardadoCorrecto
-    ? "El nuevo plan fue agregado y guardado."
-    : "El plan se agregó, pero no pudo guardarse."
+    mostrarMensaje(
+        "El nuevo plan fue agregado.",
+        "mensaje-exito"
+    )
 
-const tipoMensaje = guardadoCorrecto
-    ? "mensaje-exito"
-    : "mensaje-error"
+    const textoNotificacion = guardadoCorrecto
+        ? "Plan agregado y guardado."
+        : "El plan no pudo guardarse."
 
-mostrarMensaje(textoMensaje, tipoMensaje)
+    const tipoNotificacion = guardadoCorrecto
+        ? "exito"
+        : "error"
+
+    notificar(textoNotificacion, tipoNotificacion)
 }
 
 function eliminarPlan(idPlan) {
-    const indicePlan = planes.findIndex(plan => plan.id === idPlan)
+    const indicePlan = planes.findIndex(
+        plan => plan.id === idPlan
+    )
 
     if (indicePlan !== -1) {
         const nombreEliminado =
@@ -209,22 +252,22 @@ function eliminarPlan(idPlan) {
         planes.splice(indicePlan, 1)
         sincronizarDatos()
 
-        mostrarMensaje(
+        notificar(
             nombreEliminado + " fue eliminado.",
-            "mensaje-exito"
+            "exito"
         )
     }
 }
 
 function vaciarPlanes() {
-    const textoMensaje = planes.length > 0
+    const textoNotificacion = planes.length > 0
         ? "Todos los planes fueron eliminados."
         : "No había planes para eliminar."
 
     planes = []
-   sincronizarDatos()
+    sincronizarDatos()
 
-    mostrarMensaje(textoMensaje, "mensaje-exito")
+    notificar(textoNotificacion, "exito")
 }
 
 botonAgregar.addEventListener("click", agregarPlan)
@@ -235,7 +278,10 @@ formularioPlan.addEventListener("submit", event => {
 })
 
 buscador.addEventListener("keyup", event => {
-    terminoBusqueda = event.target.value.trim().toLowerCase()
+    terminoBusqueda = event.target.value
+        .trim()
+        .toLowerCase()
+
     actualizarVista()
 })
 
@@ -248,7 +294,6 @@ contenedorPlanes.addEventListener("click", event => {
 
 botonVaciar.addEventListener("click", vaciarPlanes)
 
-sincronizarDatos()
+cargarPlanes()
 mostrarBeneficioPromocional()
-
 
