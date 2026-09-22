@@ -192,18 +192,189 @@ function crearSolicitud(planSeleccionado) {
     }
 }
 
-// Guarda una nueva solicitud en localStorage.
-function guardarSolicitud(solicitud) {
-    const solicitudesGuardadas =
-        obtenerDatosGuardados(CLAVE_SOLICITUDES, [])
-
-    solicitudesGuardadas.push(solicitud)
-
-    localStorage.setItem(
+// Obtiene el historial completo desde localStorage.
+function obtenerSolicitudes() {
+    return obtenerDatosGuardados(
         CLAVE_SOLICITUDES,
-        JSON.stringify(solicitudesGuardadas)
+        []
     )
 }
+
+// Guarda el array actualizado de solicitudes.
+function guardarSolicitudes(solicitudes) {
+    localStorage.setItem(
+        CLAVE_SOLICITUDES,
+        JSON.stringify(solicitudes)
+    )
+}
+
+// Agrega una nueva solicitud al historial.
+function guardarSolicitud(solicitud) {
+    const solicitudes = obtenerSolicitudes()
+
+    solicitudes.push(solicitud)
+    guardarSolicitudes(solicitudes)
+}
+
+// Actualiza el historial visible.
+function actualizarHistorial() {
+    const solicitudes = obtenerSolicitudes()
+    renderizarSolicitudes(solicitudes)
+}
+
+// Permite modificar la duración de una solicitud existente.
+async function modificarSolicitud(idSolicitud) {
+    const solicitudes = obtenerSolicitudes()
+
+    const solicitudEncontrada = solicitudes.find(
+        solicitud =>
+            solicitud.idSolicitud === idSolicitud
+    )
+
+    if (!solicitudEncontrada) {
+        mostrarNotificacion(
+            "No encontramos la solicitud.",
+            "error"
+        )
+        return
+    }
+
+    const resultado = await Swal.fire({
+        title: "Modificar duración",
+        text: solicitudEncontrada.plan.nombre,
+        input: "select",
+        inputOptions: {
+            1: "1 mes",
+            3: "3 meses",
+            6: "6 meses",
+            12: "12 meses"
+        },
+        inputValue:
+            String(solicitudEncontrada.cantidadMeses),
+        showCancelButton: true,
+        confirmButtonText: "Guardar cambios",
+        cancelButtonText: "Cancelar",
+        confirmButtonColor: "#6f1d46",
+        cancelButtonColor: "#786a71"
+    })
+
+    if (!resultado.isConfirmed) {
+        return
+    }
+
+    const nuevaDuracion = Number(resultado.value)
+
+    // Map genera un nuevo array con la solicitud modificada.
+    const solicitudesActualizadas = solicitudes.map(
+        solicitud => {
+            if (
+                solicitud.idSolicitud !== idSolicitud
+            ) {
+                return solicitud
+            }
+
+            return {
+                ...solicitud,
+                cantidadMeses: nuevaDuracion,
+                precioTotal:
+                    solicitud.plan.precio *
+                    nuevaDuracion
+            }
+        }
+    )
+
+    guardarSolicitudes(solicitudesActualizadas)
+    actualizarHistorial()
+
+    mostrarNotificacion(
+        "La duración fue actualizada."
+    )
+}
+
+// Elimina una solicitud individual del historial.
+async function eliminarSolicitud(idSolicitud) {
+    const solicitudes = obtenerSolicitudes()
+
+    const solicitudEncontrada = solicitudes.find(
+        solicitud =>
+            solicitud.idSolicitud === idSolicitud
+    )
+
+    if (!solicitudEncontrada) {
+        mostrarNotificacion(
+            "No encontramos la solicitud.",
+            "error"
+        )
+        return
+    }
+
+    const resultado = await Swal.fire({
+        title: "¿Eliminar esta solicitud?",
+        text:
+            `${solicitudEncontrada.plan.nombre} ` +
+            `dejará de aparecer en tu historial.`,
+        icon: "warning",
+        showCancelButton: true,
+        confirmButtonText: "Eliminar",
+        cancelButtonText: "Cancelar",
+        confirmButtonColor: "#b42318",
+        cancelButtonColor: "#786a71"
+    })
+
+    if (!resultado.isConfirmed) {
+        return
+    }
+
+    const solicitudesActualizadas = solicitudes.filter(
+        solicitud =>
+            solicitud.idSolicitud !== idSolicitud
+    )
+
+    guardarSolicitudes(solicitudesActualizadas)
+    actualizarHistorial()
+
+    mostrarNotificacion(
+        "La solicitud fue eliminada."
+    )
+}
+
+// Vacía por completo el historial almacenado.
+async function vaciarHistorial() {
+    const solicitudes = obtenerSolicitudes()
+
+    if (solicitudes.length === 0) {
+        mostrarNotificacion(
+            "El historial ya está vacío.",
+            "error"
+        )
+        return
+    }
+
+    const resultado = await Swal.fire({
+        title: "¿Vaciar todo el historial?",
+        text:
+            "Esta acción eliminará todas las " +
+            "solicitudes guardadas.",
+        icon: "warning",
+        showCancelButton: true,
+        confirmButtonText: "Vaciar historial",
+        cancelButtonText: "Cancelar",
+        confirmButtonColor: "#b42318",
+        cancelButtonColor: "#786a71"
+    })
+
+    if (!resultado.isConfirmed) {
+        return
+    }
+
+    localStorage.removeItem(CLAVE_SOLICITUDES)
+    actualizarHistorial()
+
+    mostrarNotificacion(
+        "El historial fue vaciado."
+    )
+}
+
 
 // Confirma la contratación con SweetAlert2.
 async function confirmarContratacion(evento) {
@@ -259,6 +430,7 @@ async function confirmarContratacion(evento) {
     }
 
     guardarSolicitud(solicitud)
+    actualizarHistorial() 
 
     idPlanSeleccionado = null
 
@@ -423,5 +595,41 @@ formularioContratacion.addEventListener(
     confirmarContratacion
 )
 
-// Inicializa el portal.
+// Gestiona las acciones de cada solicitud.
+contenedorSolicitudes.addEventListener(
+    "click",
+    evento => {
+        const botonAccion = evento.target.closest(
+            "[data-accion]"
+        )
+
+        if (!botonAccion) {
+            return
+        }
+
+        const idSolicitud =
+            Number(botonAccion.dataset.id)
+
+        const accion =
+            botonAccion.dataset.accion
+
+        if (accion === "modificar") {
+            modificarSolicitud(idSolicitud)
+        }
+
+        if (accion === "eliminar") {
+            eliminarSolicitud(idSolicitud)
+        }
+    }
+)
+
+// Vacía todas las solicitudes almacenadas.
+botonVaciarHistorial.addEventListener(
+    "click",
+    vaciarHistorial
+)
+
+
+// Inicializa el catálogo y el historial.
+actualizarHistorial()
 cargarPlanes()

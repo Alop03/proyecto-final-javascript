@@ -238,3 +238,129 @@ function limpiarContratacion() {
     formularioContratacion.reset()
     seccionContratacion.classList.add("oculto")
 }
+
+// Selectores correspondientes al historial de solicitudes
+const contenedorSolicitudes =
+    document.querySelector("#contenedor-solicitudes")
+
+const cantidadSolicitudes =
+    document.querySelector("#cantidad-solicitudes")
+
+const valorSolicitudes =
+    document.querySelector("#valor-solicitudes")
+
+const botonVaciarHistorial =
+    document.querySelector("#boton-vaciar-historial")
+
+// Renderiza las solicitudes guardadas en localStorage.
+function renderizarSolicitudes(solicitudes) {
+    cantidadSolicitudes.textContent =
+        solicitudes.length
+
+    // Reduce calcula el valor de todas las contrataciones.
+    const valorTotal = solicitudes.reduce(
+        (acumulador, solicitud) =>
+            acumulador + solicitud.precioTotal,
+        0
+    )
+
+    valorSolicitudes.textContent =
+        `$${valorTotal.toLocaleString("es-UY")}`
+
+    botonVaciarHistorial.classList.toggle(
+        "oculto",
+        solicitudes.length === 0
+    )
+
+    if (solicitudes.length === 0) {
+        contenedorSolicitudes.innerHTML = `
+            <p class="historial-vacio">
+                Todavía no realizaste ninguna solicitud.
+            </p>
+        `
+        return
+    }
+
+    contenedorSolicitudes.innerHTML = solicitudes
+        .map(solicitud => {
+            const {
+                idSolicitud,
+                fecha,
+                cliente,
+                plan,
+                cantidadMeses,
+                precioTotal
+            } = solicitud
+
+            return `
+                <article class="tarjeta-solicitud">
+                    <div class="cabecera-solicitud">
+                        <div>
+                            <span class="numero-solicitud">
+                                Solicitud #${idSolicitud}
+                            </span>
+
+                            <h3>${plan.nombre}</h3>
+                        </div>
+
+                        <span class="fecha-solicitud">
+                            ${fecha}
+                        </span>
+                    </div>
+
+                    <dl>
+                        <div>
+                            <dt>Cliente</dt>
+                            <dd>${cliente.nombre}</dd>
+                        </div>
+
+                        <div>
+                            <dt>Correo</dt>
+                            <dd>${cliente.email}</dd>
+                        </div>
+
+                        <div>
+                            <dt>Duración</dt>
+                            <dd>
+                                ${cantidadMeses}
+                                ${
+                                    cantidadMeses === 1
+                                        ? "mes"
+                                        : "meses"
+                                }
+                            </dd>
+                        </div>
+
+                        <div>
+                            <dt>Total</dt>
+                            <dd>
+                                $${precioTotal.toLocaleString("es-UY")}
+                            </dd>
+                        </div>
+                    </dl>
+
+                    <div class="acciones-solicitud">
+                        <button
+                            type="button"
+                            class="boton-modificar"
+                            data-accion="modificar"
+                            data-id="${idSolicitud}"
+                        >
+                            Modificar duración
+                        </button>
+
+                        <button
+                            type="button"
+                            class="boton-eliminar"
+                            data-accion="eliminar"
+                            data-id="${idSolicitud}"
+                        >
+                            Eliminar
+                        </button>
+                    </div>
+                </article>
+            `
+        })
+        .join("")
+}
+
