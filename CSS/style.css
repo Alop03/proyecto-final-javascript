@@ -17,6 +17,18 @@ body {
     padding: 40px 20px;
 }
 
+.logo {
+    display: block;
+    width: min(420px, 90%);
+    height: auto;
+    margin: 0 auto 14px;
+}
+
+.descripcion-portal {
+    font-size: 1.05rem;
+    line-height: 1.5;
+}
+
 .encabezado h1 {
     margin-bottom: 10px;
 }
