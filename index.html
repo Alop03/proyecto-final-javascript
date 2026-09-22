@@ -2,94 +2,139 @@
 <html lang="es">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/toastify-js/src/toastify.min.css">
-    <link rel="stylesheet" href="./CSS/style.css">
+    <meta
+        name="viewport"
+        content="width=device-width, initial-scale=1.0"
+    >
 
-    <script src="https://cdn.jsdelivr.net/npm/toastify-js"></script>
-  
-    <script defer src="./JS/main.js"></script>
+    <link
+        rel="stylesheet"
+        href="https://cdn.jsdelivr.net/npm/toastify-js/src/toastify.min.css"
+    >
+
+    <link
+        rel="stylesheet"
+        href="./CSS/style.css"
+    >
+
+    <script
+        src="https://cdn.jsdelivr.net/npm/toastify-js"
+    ></script>
+
+    <script
+        defer
+        src="./JS/interfaz.js"
+    ></script>
+
+    <script
+        defer
+        src="./JS/main.js"
+    ></script>
 
     <title>Ansiedark Joyas</title>
 </head>
 
-
 <body>
     <header class="encabezado">
-    <img
-        class="logo"
-        src="./assets/logo-ansiedark.svg"
-        alt="Ansiedark Joyas"
-    >
+        <img
+            class="logo"
+            src="./assets/logo-ansiedark.svg"
+            alt="Ansiedark Joyas"
+        >
 
-    <p class="descripcion-portal">
-        Compará y contratá tu plan mensual de joyería.
-    </p>
-</header>
-
-    <section 
-        id="aviso-promocional" 
-        class="aviso-promocional" 
-        aria-live="polite"
-    ></section>
+        <p class="descripcion-portal">
+            Compará y contratá tu plan mensual de joyería.
+        </p>
+    </header>
 
     <main class="contenedor">
-        <section class="panel">
-            <h2>Crear un nuevo plan</h2>
+        <section class="presentacion">
+            <div>
+                <span class="sobre-titulo">
+                    Suscripciones Ansiedark
+                </span>
 
-            <form id="formulario-plan">
-                <div class="campo">
-                    <label for="nombre-plan">Nombre</label>
-                    <input type="text" id="nombre-plan" placeholder="Ej: Plan Bronce">
-                </div>
+                <h1>
+                    Un nuevo brillo todos los meses
+                </h1>
 
-                <div class="campo">
-                    <label for="precio-plan">Precio mensual</label>
-                    <input type="number" id="precio-plan" min="1" placeholder="Ej: 900">
-                </div>
-
-                <div class="campo">
-                    <label for="cantidad-joyas">Cantidad de joyas</label>
-                    <input type="number" id="cantidad-joyas" min="1" placeholder="Ej: 2">
-                </div>
-
-                <div class="campo">
-                    <label for="descripcion-plan">Descripción</label>
-                    <input type="text" id="descripcion-plan" placeholder="Descripción del plan">
-                </div>
-
-                <button type="button" id="boton-agregar">Agregar plan</button>
-            </form>
-
-            <p id="mensaje" class="mensaje" aria-live="polite"></p>
+                <p>
+                    Conocé nuestros planes, compará sus
+                    beneficios y elegí el que mejor se
+                    adapte a vos.
+                </p>
+            </div>
         </section>
 
-        <section class="panel">
-            <div class="cabecera-listado">
+        <section class="seccion-catalogo">
+            <div class="cabecera-seccion">
                 <div>
                     <h2>Planes disponibles</h2>
-                    <p>Compará las opciones de Ansiedark.</p>
+
+                    <p>
+                        Podés seleccionar hasta dos planes
+                        para comparar.
+                    </p>
                 </div>
 
-                <div class="campo campo-busqueda">
-                    <label for="buscador">Buscar un plan</label>
-                    <input type="text" id="buscador" placeholder="Escribí un nombre">
+                <div class="campo-busqueda">
+                    <label for="buscador">
+                        Buscar un plan
+                    </label>
+
+                    <input
+                        type="search"
+                        id="buscador"
+                        placeholder="Ej: Plan Oro"
+                    >
                 </div>
             </div>
-            
-            <button type="button" id="boton-vaciar">
-                 Vaciar planes
-            </button>
 
-            <p id="estado-carga" class="estado-carga" aria-live="polite"></p>
+            <p
+                id="estado-carga"
+                class="estado-carga"
+                aria-live="polite"
+            ></p>
 
-            <div id="contenedor-planes" class="grilla-planes"></div>
+            <div
+                id="contenedor-planes"
+                class="grilla-planes"
+            ></div>
+        </section>
+
+        <section
+            id="comparador"
+            class="seccion-comparador oculto"
+        >
+            <div class="cabecera-comparador">
+                <div>
+                    <span class="sobre-titulo">
+                        Comparador
+                    </span>
+
+                    <h2>Compará antes de elegir</h2>
+                </div>
+
+                <span
+                    id="cantidad-comparados"
+                    class="contador-comparados"
+                >
+                    0 de 2 seleccionados
+                </span>
+            </div>
+
+            <div
+                id="contenido-comparador"
+                class="contenido-comparador"
+            ></div>
         </section>
     </main>
 
     <footer>
-        <p>Ansiedark — Suscripciones de joyería</p>
+        <p>
+            Ansiedark — Suscripciones mensuales de joyería
+        </p>
     </footer>
 </body>
 </html>

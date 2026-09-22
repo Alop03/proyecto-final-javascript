@@ -1,72 +1,166 @@
-// Pre-entrega 10: APIs, peticiones y librerías
+// Pre-entrega final: portal de contratación de Ansiedark
 
-const CLAVE_STORAGE = "planesAnsiedarkAPI"
+const CLAVE_COMPARACION = "comparacionAnsiedark"
+const CLAVE_PLAN_SELECCIONADO = "planSeleccionadoAnsiedark"
 
+// Estado principal de la aplicación
 let planes = []
+let idsComparados = []
 let terminoBusqueda = ""
 
-const contenedorPlanes = document.querySelector("#contenedor-planes")
-const formularioPlan = document.querySelector("#formulario-plan")
-const inputNombre = document.querySelector("#nombre-plan")
-const inputPrecio = document.querySelector("#precio-plan")
-const inputCantidadJoyas = document.querySelector("#cantidad-joyas")
-const inputDescripcion = document.querySelector("#descripcion-plan")
-const botonAgregar = document.querySelector("#boton-agregar")
-const botonVaciar = document.querySelector("#boton-vaciar")
-const buscador = document.querySelector("#buscador")
-const mensaje = document.querySelector("#mensaje")
-const estadoCarga = document.querySelector("#estado-carga")
-const avisoPromocional = document.querySelector("#aviso-promocional")
+// Recupera del Storage los planes seleccionados para comparar.
+function obtenerComparacionGuardada() {
+    try {
+        const datosGuardados =
+            localStorage.getItem(CLAVE_COMPARACION)
 
-function notificar(texto, tipo) {
-    const color = tipo === "error" ? "#b42318" : "#237a3b"
+        return JSON.parse(datosGuardados) || []
+    } catch (error) {
+        return []
+    }
+}
 
-    Toastify({
-        text: texto,
-        duration: 3000,
-        close: true,
-        gravity: "top",
-        position: "right",
-        stopOnFocus: true,
-        style: {
-            background: color
+// Guarda la comparación actual en localStorage.
+function guardarComparacion() {
+    localStorage.setItem(
+        CLAVE_COMPARACION,
+        JSON.stringify(idsComparados)
+    )
+}
+
+// Obtiene los planes que coinciden con la búsqueda.
+function obtenerPlanesFiltrados() {
+    return terminoBusqueda === ""
+        ? planes
+        : planes.filter(plan =>
+            plan.nombre
+                .toLowerCase()
+                .includes(terminoBusqueda)
+        )
+}
+
+// Busca los objetos completos seleccionados para comparar.
+function obtenerPlanesComparados() {
+    return idsComparados
+        .map(idPlan =>
+            planes.find(plan => plan.id === idPlan)
+        )
+        .filter(plan => plan !== undefined)
+}
+
+// Actualiza el catálogo y el comparador.
+function actualizarVista() {
+    const planesFiltrados = obtenerPlanesFiltrados()
+    const planesComparados = obtenerPlanesComparados()
+
+    renderizarPlanes(
+        planesFiltrados,
+        idsComparados
+    )
+
+    renderizarComparador(planesComparados)
+}
+
+// Agrega o elimina un plan del comparador.
+function alternarComparacion(idPlan) {
+    const planYaSeleccionado =
+        idsComparados.includes(idPlan)
+
+    if (planYaSeleccionado) {
+        idsComparados = idsComparados.filter(
+            idComparado => idComparado !== idPlan
+        )
+
+        mostrarNotificacion(
+            "El plan fue retirado de la comparación."
+        )
+    } else {
+        if (idsComparados.length >= 2) {
+            mostrarNotificacion(
+                "Podés comparar un máximo de dos planes.",
+                "error"
+            )
+            return
         }
-    }).showToast()
+
+        idsComparados.push(idPlan)
+
+        mostrarNotificacion(
+            "Plan agregado a la comparación."
+        )
+    }
+
+    guardarComparacion()
+    actualizarVista()
 }
 
-function obtenerPlanesGuardados() {
-    const datosGuardados = localStorage.getItem(CLAVE_STORAGE)
+// Guarda el plan elegido para continuar la contratación.
+function elegirPlan(idPlan) {
+    const planSeleccionado = planes.find(
+        plan => plan.id === idPlan
+    )
 
-    return JSON.parse(datosGuardados ?? "null")
+    if (!planSeleccionado) {
+        mostrarNotificacion(
+            "No pudimos encontrar el plan seleccionado.",
+            "error"
+        )
+        return
+    }
+
+    localStorage.setItem(
+        CLAVE_PLAN_SELECCIONADO,
+        JSON.stringify(planSeleccionado)
+    )
+
+    mostrarNotificacion(
+        `${planSeleccionado.nombre} fue seleccionado.`
+    )
 }
 
+// Carga el catálogo desde el archivo JSON.
 async function cargarPlanes() {
-    estadoCarga.textContent = "Cargando planes disponibles..."
+    estadoCarga.textContent =
+        "Cargando planes disponibles..."
 
     try {
-        const respuesta = await fetch("./DATA/planes.json")
+        const respuesta = await fetch(
+            "./DATA/planes.json"
+        )
 
         if (!respuesta.ok) {
-            throw new Error("No se pudo obtener el archivo de planes")
+            throw new Error(
+                "No se pudo obtener el catálogo"
+            )
         }
 
-        const planesRecibidos = await respuesta.json()
-        const planesGuardados = obtenerPlanesGuardados()
+        planes = await respuesta.json()
 
-        planes = planesGuardados ?? planesRecibidos
+        const comparacionGuardada =
+            obtenerComparacionGuardada()
 
-        sincronizarDatos()
-
-        notificar(
-            "Planes cargados correctamente.",
-            "exito"
+        // Conserva solamente identificadores que todavía existen.
+        idsComparados = comparacionGuardada.filter(
+            idPlan =>
+                planes.some(plan => plan.id === idPlan)
         )
-    } catch (error) {
-        planes = obtenerPlanesGuardados() ?? []
+
+        guardarComparacion()
         actualizarVista()
 
-        notificar(
-            "No pudimos cargar los planes. Intentá nuevamente.",
+        mostrarNotificacion(
+            "Planes cargados correctamente."
+        )
+    } catch (error) {
+        contenedorPlanes.innerHTML = `
+            <p class="mensaje-error-carga">
+                No pudimos cargar los planes.
+                Actualizá la página para intentarlo nuevamente.
+            </p>
+        `
+
+        mostrarNotificacion(
+            "Ocurrió un error al cargar los planes.",
             "error"
         )
     } finally {
@@ -74,226 +168,39 @@ async function cargarPlanes() {
     }
 }
 
-function sincronizarDatos() {
-    let guardadoCorrecto = false
-
-    try {
-        const planesConvertidos = JSON.stringify(planes)
-        localStorage.setItem(CLAVE_STORAGE, planesConvertidos)
-        guardadoCorrecto = true
-    } catch (error) {
-        notificar(
-            "No pudimos guardar los cambios.",
-            "error"
-        )
-    } finally {
-        actualizarVista()
-    }
-
-    return guardadoCorrecto
-}
-
-function renderizarPlanes(listaPlanes) {
-    contenedorPlanes.innerHTML = ""
-
-    if (listaPlanes.length === 0) {
-        contenedorPlanes.innerHTML = `
-            <p class="sin-resultados">
-                No encontramos planes para mostrar.
-            </p>
-        `
-        return
-    }
-
-    listaPlanes.forEach(plan => {
-        const {
-            id,
-            nombre,
-            precio,
-            cantidadJoyas,
-            descripcion
-        } = plan
-
-        const textoJoyas = cantidadJoyas === 1
-            ? "1 joya mensual"
-            : `${cantidadJoyas} joyas mensuales`
-
-        contenedorPlanes.innerHTML += `
-            <article class="tarjeta-plan">
-                <h3>${nombre}</h3>
-
-                <p class="precio">
-                    $${precio.toLocaleString("es-UY")} por mes
-                </p>
-
-                <p>${textoJoyas}</p>
-                <p class="descripcion">${descripcion}</p>
-
-                <button
-                    type="button"
-                    class="boton-eliminar"
-                    data-id="${id}">
-                    Eliminar
-                </button>
-            </article>
-        `
-    })
-}
-
-function mostrarMensaje(texto, tipo) {
-    mensaje.textContent = texto
-    mensaje.className = "mensaje " + tipo
-}
-
-function mostrarBeneficioPromocional() {
-    setTimeout(() => {
-        avisoPromocional.innerHTML = `
-            <strong>Beneficio especial:</strong>
-            obtené un 10% de descuento en el primer mes.
-        `
-
-        avisoPromocional.classList.add(
-            "aviso-promocional-visible"
-        )
-    }, 3000)
-}
-
-function obtenerPlanesFiltrados() {
-    return terminoBusqueda === ""
-        ? planes
-        : planes.filter(plan => {
-            return plan.nombre
-                .toLowerCase()
-                .includes(terminoBusqueda)
-        })
-}
-
-function actualizarVista() {
-    const planesFiltrados = obtenerPlanesFiltrados()
-    renderizarPlanes(planesFiltrados)
-}
-
-function limpiarFormulario() {
-    formularioPlan.reset()
-    inputNombre.focus()
-}
-
-function agregarPlan() {
-    const nombre = inputNombre.value.trim()
-    const precio = Number(inputPrecio.value)
-    const cantidadJoyas = Number(inputCantidadJoyas.value)
-    const descripcion = inputDescripcion.value.trim()
-
-    if (
-        nombre === "" ||
-        descripcion === "" ||
-        precio <= 0 ||
-        cantidadJoyas <= 0
-    ) {
-        mostrarMensaje(
-            "Completá todos los campos con datos válidos.",
-            "mensaje-error"
-        )
-
-        notificar(
-            "Revisá los datos ingresados.",
-            "error"
-        )
-
-        return
-    }
-
-    const ids = planes.map(plan => plan.id)
-    const nuevoId = Math.max(...ids, 0) + 1
-
-    const nuevoPlan = {
-        id: nuevoId,
-        nombre,
-        precio,
-        cantidadJoyas,
-        descripcion
-    }
-
-    planes.push(nuevoPlan)
-
-    const guardadoCorrecto = sincronizarDatos()
-
-    buscador.value = ""
-    terminoBusqueda = ""
-
-    limpiarFormulario()
-    actualizarVista()
-
-    mostrarMensaje(
-        "El nuevo plan fue agregado.",
-        "mensaje-exito"
-    )
-
-    const textoNotificacion = guardadoCorrecto
-        ? "Plan agregado y guardado."
-        : "El plan no pudo guardarse."
-
-    const tipoNotificacion = guardadoCorrecto
-        ? "exito"
-        : "error"
-
-    notificar(textoNotificacion, tipoNotificacion)
-}
-
-function eliminarPlan(idPlan) {
-    const indicePlan = planes.findIndex(
-        plan => plan.id === idPlan
-    )
-
-    if (indicePlan !== -1) {
-        const nombreEliminado =
-            planes[indicePlan]?.nombre ?? "El plan seleccionado"
-
-        planes.splice(indicePlan, 1)
-        sincronizarDatos()
-
-        notificar(
-            nombreEliminado + " fue eliminado.",
-            "exito"
-        )
-    }
-}
-
-function vaciarPlanes() {
-    const textoNotificacion = planes.length > 0
-        ? "Todos los planes fueron eliminados."
-        : "No había planes para eliminar."
-
-    planes = []
-    sincronizarDatos()
-
-    notificar(textoNotificacion, "exito")
-}
-
-botonAgregar.addEventListener("click", agregarPlan)
-
-formularioPlan.addEventListener("submit", event => {
-    event.preventDefault()
-    agregarPlan()
-})
-
-buscador.addEventListener("keyup", event => {
-    terminoBusqueda = event.target.value
-        .trim()
-        .toLowerCase()
+// Filtra el catálogo mientras el usuario escribe.
+buscador.addEventListener("input", evento => {
+    terminoBusqueda =
+        evento.target.value.trim().toLowerCase()
 
     actualizarVista()
 })
 
-contenedorPlanes.addEventListener("click", event => {
-    if (event.target.classList.contains("boton-eliminar")) {
-        const idPlan = Number(event.target.dataset.id)
-        eliminarPlan(idPlan)
+// Gestiona las acciones realizadas en las tarjetas.
+contenedorPlanes.addEventListener("click", evento => {
+    const botonComparar =
+        evento.target.closest(".boton-comparar")
+
+    if (!botonComparar) {
+        return
     }
+
+    const idPlan = Number(botonComparar.dataset.id)
+    alternarComparacion(idPlan)
 })
 
-botonVaciar.addEventListener("click", vaciarPlanes)
+// Gestiona la elección desde el comparador.
+contenidoComparador.addEventListener("click", evento => {
+    const botonElegir =
+        evento.target.closest(".boton-elegir")
 
+    if (!botonElegir) {
+        return
+    }
+
+    const idPlan = Number(botonElegir.dataset.id)
+    elegirPlan(idPlan)
+})
+
+// Inicializa el portal.
 cargarPlanes()
-mostrarBeneficioPromocional()
-
