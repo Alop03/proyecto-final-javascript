@@ -23,6 +23,10 @@
     ></script>
 
     <script
+    src="https://cdn.jsdelivr.net/npm/sweetalert2@11"
+    ></script>
+
+    <script
         defer
         src="./JS/interfaz.js"
     ></script>
@@ -129,6 +133,133 @@
                 class="contenido-comparador"
             ></div>
         </section>
+
+        <section
+            id="contratacion"
+            class="seccion-contratacion oculto"
+        >
+            <div class="cabecera-contratacion">
+                <div>
+                    <span class="sobre-titulo">
+                        Contratación
+                    </span>
+
+                    <h2>Completá tu suscripción</h2>
+
+                    <p>
+                        Revisá el plan elegido y completá tus datos.
+                    </p>
+                </div>
+
+                <button
+                    type="button"
+                    id="boton-cancelar-seleccion"
+                    class="boton-secundario"
+                >
+                    Cambiar plan
+                </button>
+            </div>
+
+            <div class="contenido-contratacion">
+                <form id="formulario-contratacion">
+                    <div class="campo-formulario">
+                        <label for="nombre-cliente">
+                            Nombre completo
+                        </label>
+
+                        <input
+                            type="text"
+                            id="nombre-cliente"
+                            required
+                            minlength="3"
+                            autocomplete="name"
+                        >
+                    </div>
+
+                    <div class="campo-formulario">
+                        <label for="email-cliente">
+                            Correo electrónico
+                        </label>
+
+                        <input
+                            type="email"
+                            id="email-cliente"
+                            required
+                            autocomplete="email"
+                        >
+                    </div>
+
+                    <div class="campo-formulario">
+                        <label for="telefono-cliente">
+                            Teléfono
+                        </label>
+
+                        <input
+                            type="tel"
+                            id="telefono-cliente"
+                            placeholder="Opcional"
+                            autocomplete="tel"
+                        >
+                    </div>
+
+                    <div class="campo-formulario">
+                        <label for="duracion-suscripcion">
+                            Duración
+                        </label>
+
+                        <select
+                            id="duracion-suscripcion"
+                            required
+                        >
+                            <option value="1">1 mes</option>
+                            <option value="3">3 meses</option>
+                            <option value="6">6 meses</option>
+                            <option value="12">12 meses</option>
+                        </select>
+                    </div>
+
+                    <button
+                        type="submit"
+                        class="boton-confirmar"
+                    >
+                        Revisar y confirmar
+                    </button>
+                </form>
+
+                <aside class="resumen-contratacion">
+                    <h3>Resumen</h3>
+
+                    <dl>
+                        <div>
+                            <dt>Plan</dt>
+                            <dd id="resumen-plan">—</dd>
+                        </div>
+
+                        <div>
+                            <dt>Precio mensual</dt>
+                            <dd id="resumen-precio">—</dd>
+                        </div>
+
+                        <div>
+                            <dt>Duración</dt>
+                            <dd id="resumen-duracion">—</dd>
+                        </div>
+
+                        <div>
+                            <dt>Joyas por mes</dt>
+                            <dd id="resumen-joyas">—</dd>
+                        </div>
+
+                        <div class="fila-total">
+                            <dt>Total</dt>
+                            <dd id="resumen-total">—</dd>
+                        </div>
+                    </dl>
+                </aside>
+            </div>
+        </section>
+
+        
     </main>
 
     <footer>

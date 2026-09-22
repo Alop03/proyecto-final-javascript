@@ -165,3 +165,76 @@ function renderizarComparador(planesComparados) {
 
     contenidoComparador.innerHTML = ayuda + tarjetasComparacion
 }
+
+
+// Selectores correspondientes al proceso de contratación
+const seccionContratacion =
+    document.querySelector("#contratacion")
+
+const formularioContratacion =
+    document.querySelector("#formulario-contratacion")
+
+const inputNombreCliente =
+    document.querySelector("#nombre-cliente")
+
+const inputEmailCliente =
+    document.querySelector("#email-cliente")
+
+const inputTelefonoCliente =
+    document.querySelector("#telefono-cliente")
+
+const selectorDuracion =
+    document.querySelector("#duracion-suscripcion")
+
+const botonCancelarSeleccion =
+    document.querySelector("#boton-cancelar-seleccion")
+
+const resumenPlan =
+    document.querySelector("#resumen-plan")
+
+const resumenPrecio =
+    document.querySelector("#resumen-precio")
+
+const resumenDuracion =
+    document.querySelector("#resumen-duracion")
+
+const resumenJoyas =
+    document.querySelector("#resumen-joyas")
+
+const resumenTotal =
+    document.querySelector("#resumen-total")
+
+// Muestra el plan seleccionado y calcula el total.
+function renderizarContratacion(plan, cantidadMeses) {
+    const {
+        nombre,
+        precio,
+        cantidadJoyas
+    } = plan
+
+    const precioTotal = precio * cantidadMeses
+
+    resumenPlan.textContent = nombre
+
+    resumenPrecio.textContent =
+        `$${precio.toLocaleString("es-UY")}`
+
+    resumenDuracion.textContent =
+        cantidadMeses === 1
+            ? "1 mes"
+            : `${cantidadMeses} meses`
+
+    resumenJoyas.textContent =
+        crearTextoJoyas(cantidadJoyas)
+
+    resumenTotal.textContent =
+        `$${precioTotal.toLocaleString("es-UY")}`
+
+    seccionContratacion.classList.remove("oculto")
+}
+
+// Oculta y limpia el formulario de contratación.
+function limpiarContratacion() {
+    formularioContratacion.reset()
+    seccionContratacion.classList.add("oculto")
+}
